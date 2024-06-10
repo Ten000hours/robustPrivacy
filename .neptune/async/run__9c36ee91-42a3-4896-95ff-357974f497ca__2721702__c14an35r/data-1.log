@@ -1,0 +1,12 @@
+{"obj": {"type": "AssignString", "path": ["sys", "name"], "value": "Untitled"}, "version": 1, "at": 1717597461.344464}
+{"obj": {"type": "AssignString", "path": ["sys", "description"], "value": ""}, "version": 2, "at": 1717597461.3448303}
+{"obj": {"type": "AssignString", "path": ["monitoring", "8e5ad7a5", "hostname"], "value": "sn4622120131"}, "version": 3, "at": 1717597461.3450053}
+{"obj": {"type": "AssignString", "path": ["sys", "hostname"], "value": "sn4622120131"}, "version": 4, "at": 1717597461.3451445}
+{"obj": {"type": "AssignString", "path": ["monitoring", "8e5ad7a5", "pid"], "value": "2721702"}, "version": 5, "at": 1717597461.3452818}
+{"obj": {"type": "AssignString", "path": ["monitoring", "8e5ad7a5", "tid"], "value": "140058684102464"}, "version": 6, "at": 1717597461.3454123}
+{"obj": {"type": "AssignBool", "path": ["sys", "failed"], "value": false}, "version": 7, "at": 1717597461.3455386}
+{"obj": {"type": "ClearStringLog", "path": ["monitoring", "8e5ad7a5", "stdout"]}, "version": 8, "at": 1717597461.3457172}
+{"obj": {"type": "ClearStringLog", "path": ["monitoring", "8e5ad7a5", "stderr"]}, "version": 9, "at": 1717597461.3458352}
+{"obj": {"type": "AssignString", "path": ["source_code", "entrypoint"], "value": "snl_finetune_unstructured.py"}, "version": 10, "at": 1717597461.3461943}
+{"obj": {"type": "UploadFileSet", "path": ["source_code", "files"], "file_globs": ["/home/xxu002/snip-snl-pgd/snl_finetune_unstructured.py"], "reset": "False"}, "version": 11, "at": 1717597461.3463643}
+{"obj": {"type": "UploadFile", "path": ["source_code", "diff"], "ext": "patch", "file_path": null, "tmp_file_name": "source_code_diff-1717597461.379035-2024-06-05_10.24.21.379035.patch", "clean_after_upload": false}, "version": 12, "at": 1717597461.379539}
