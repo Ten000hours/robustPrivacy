@@ -335,7 +335,7 @@ def mask_train_kd(loader: DataLoader, model: torch.nn.Module, model_teacher: tor
 
     return losses.avg
 
-def mask_train_kd_unstructured(accelerator, loader: DataLoader, model: torch.nn.Module, model_teacher: torch.nn.Module, criterion, optimizer: Optimizer, 
+def mask_train_kd_unstructured(loader: DataLoader, model: torch.nn.Module, model_teacher: torch.nn.Module, criterion, optimizer: Optimizer, 
                epoch: int, device, alpha, display=False):
     losses = AverageMeter()
 
@@ -352,16 +352,16 @@ def mask_train_kd_unstructured(accelerator, loader: DataLoader, model: torch.nn.
         inputs = inputs.to(device)
         targets = targets.to(device)
         
-        # reg_loss = 0
-        # for name, param in model.named_parameters():
-        #     if 'alpha' in name:
-        #         reg_loss += torch.norm(param, p=1)
+        reg_loss = 0
+        for name, param in model.named_parameters():
+            if 'alpha' in name:
+                reg_loss += torch.norm(param, p=1)
         # compute output
         outputs = model(inputs)
         outputs_t = model_teacher(inputs)
         # original loss
-        # loss = criterion(outputs, targets) + criterion_kd(outputs, outputs_t) + alpha * reg_loss
-        loss = criterion(outputs, targets) 
+        loss = criterion(outputs, targets) + criterion_kd(outputs, outputs_t) + alpha * reg_loss
+        # loss = criterion(outputs, targets) 
 
         losses.update(loss.item(), inputs.size(0))
 
@@ -371,7 +371,6 @@ def mask_train_kd_unstructured(accelerator, loader: DataLoader, model: torch.nn.
         # accelerator.backward(loss)
         optimizer.step()
     
-        # scheduler.step()
 
     return losses.avg
 
