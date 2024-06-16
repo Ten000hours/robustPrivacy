@@ -224,15 +224,15 @@ def model_inference(base_classifier, loader, device, display=False, print_freq=1
             top1.update(acc1.item(), inputs.size(0))
             top5.update(acc5.item(), inputs.size(0))
             
-            if i % print_freq == 0 and display == True:
-                print("Test : [{0}/{1}]\t"
-                      "Acc@1 {top1.avg:.3f}"
-                      "Acc@5 {top5.avg:.3f}".format(
-                      i, len(loader), top1=top1, top5=top5))
+            # if i % print_freq == 0 and display == True:
+            #     print("Test : [{0}/{1}]\t"
+            #           "Acc@1 {top1.avg:.3f}"
+            #           "Acc@5 {top5.avg:.3f}".format(
+            #           i, len(loader), top1=top1, top5=top5))
     end = time.time()
-    if display == True:
-        print("Inference Time: {0:.3f}".format(end-start))
-        print("Final Accuracy: [{0}]".format(top1.avg))
+    # if display == True:
+    #     print("Inference Time: {0:.3f}".format(end-start))
+    #     print("Final Accuracy: [{0}]".format(top1.avg))
         
     return top1.avg
 

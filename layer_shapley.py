@@ -23,6 +23,7 @@ import sys
 import itertools
 from archs_unstructured.cifar_resnet import BasicBlock, BasicBlock_IN, LearnableAlpha
 from rich.console import Console
+from random import sample
 
 console = Console()
 
@@ -44,7 +45,7 @@ parser.add_argument('--logname', type=str, default='log.txt')
 parser.add_argument('--stride', type=int, default=1, help='conv1 stride')
 args = parser.parse_args()
 
-layer_mask = 0
+layer_mask = 1
 
 
 def find_subsets(nums):
@@ -89,15 +90,21 @@ from scipy.special import comb, perm
 # C=comb(45,2)
 # print(A,C)
 
-def ith_shapley_value(relu_layers_No, layer_index, model, test_loader, device, base_model):
-    subsets = find_subsets([i for i in range(relu_layers_No) if i != layer_index])
+def ith_shapley_value(monteCarloSample, relu_layers_No, layer_index, model, test_loader, device, base_model):
+    # monteCarloSample = sample([i for i in range(1, relu_layers_No+1) if i != layer_index], subsetNum)
+    subsets = find_subsets(monteCarloSample)
     sv =0
     for mask in subsets[::-1]:
         U_s = get_utility( test_loader, device, mask, base_model)
+        # early truncation
+        # if U_s < 5:
+        #     continue
         all_mask = mask +[layer_index]
         U_si = get_utility( test_loader, device, all_mask, base_model)
+        # =================exact sv calculating ================ 
         sv += (U_si - U_s)/comb(relu_layers_No-1,len(mask))
     sv = sv * 1/relu_layers_No
+    # ==============================================
 
     return sv
 
@@ -147,8 +154,8 @@ def main():
     # # log(logfilename, "Loaded the base_classifier")
 
     # # Calculating the loaded model's test accuracy.
-    # original_acc = model_inference(base_classifier, test_loader,
-    #                                 device, display=True)
+    original_acc = model_inference(base_classifier, test_loader,
+                                    device, display=True)
     # print(original_acc)
 
     
@@ -162,13 +169,40 @@ def main():
     # print(net)
 
     res = []
-    for i in tqdm(range(17)):
-        net = copy.deepcopy(base_classifier)
-        net = net.to(device)
-        # print("model recovered to original one")
-        console.print("model recovered to original one", style="bold red")
-        res.append(ith_shapley_value(17, i, net, test_loader, device, base_classifier))
-    log(logfilename, "shapley values:".join('{:.2f}'.format(v) for v in res))
+    t = 0
+    phi = [0] * 8
+    phi_ = [0] * 8
+    flag = False
+    # while abs(sum(phi) - sum(phi_))< 6:
+    for epoch in range(10):
+        console.print("abs difference: ", abs(sum(phi) - sum(phi_)),style="bold red")
+        phi_ = phi
+        t += 1
+        v_j, v_j1 = 0,0
+        monteCarloSample = sorted(sample([i for i in range(1, 8+1)], 7))
+        console.print('random samples: ', monteCarloSample)
+        for i in tqdm(range(1,9)):
+            net = copy.deepcopy(base_classifier)
+            net = net.to(device)
+            # print("model recovered to original one")
+            console.print("model recovered to original one", style="bold red")
+            if i in monteCarloSample:
+                monteCarloSample.remove(i)
+                flag = True
+            else:
+                flag = False
+            if original_acc - v_j1 < 5:
+                v_j = v_j1
+            else:
+                console.print('removed samples: ', monteCarloSample)
+                v_j = ith_shapley_value(monteCarloSample, 8, i, net, test_loader, device, base_classifier)
+            phi[i-1] = (t-1)/t * phi_[i-1] + (v_j - v_j1)/t
+            v_j1 = v_j
+            if flag == True: 
+                monteCarloSample.append(i)
+            monteCarloSample = sorted(monteCarloSample)
+            # res.append(ith_shapley_value( 4,8, i, net, test_loader, device, base_classifier))
+    log(logfilename, "shapley values:".join('{:.2f}'.format(v) for v in phi))
 
 
 

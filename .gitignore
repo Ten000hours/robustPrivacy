@@ -4,3 +4,4 @@ __pycache__/
 pretrained_models
 snl_output/
 *.pkl
+nohup.out
