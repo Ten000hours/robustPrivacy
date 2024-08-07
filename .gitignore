@@ -5,5 +5,4 @@ pretrained_models
 snl_output/
 *.pkl
 nohup.out
-snl_finetune_unstructured_*.py
 .neptune/
