@@ -59,6 +59,7 @@ def SNIP(net, keep_ratio, train_dataloader, device):
     for name, param in net.named_parameters():
         if 'alpha' in name:
             grads_abs.append(torch.abs(param.grad))
+    print("len of grad: ", len(grads_abs))
 
     # Gather all scores in a single vector and normalise
     all_scores = torch.cat([torch.flatten(x) for x in grads_abs])
@@ -66,6 +67,7 @@ def SNIP(net, keep_ratio, train_dataloader, device):
     all_scores.div_(norm_factor)
 
 
+# =============================================grad allocation=======================
     budget_list= []
     for layer_grads in grads_abs:
         layer_scores = torch.tensor(layer_grads)
@@ -75,7 +77,19 @@ def SNIP(net, keep_ratio, train_dataloader, device):
         # print(layer_grads)
         layer_budget= int((layer_total_score) * int(len(all_scores) * keep_ratio))
         budget_list.append(min(torch.numel(layer_scores) ,layer_budget))
+# =============================================grad allocation=======================
+
+# ================================================shapley ==========================================
+    # budget_list = []
+    # shapley = torch.FloatTensor([1.75,0.40,2.09,2.34,2.36,2.99,2.73,0.33,2.01,2.71,2.47,0.69,0.32,0.26,0.00,0.01])
+    # total = torch.sum(shapley)
+    # shapley.div_(total)
+    # for i,value in enumerate(shapley):
+    #     layer_budget= int((value) * int(len(all_scores) * keep_ratio))
+    #     budget_list.append(min(torch.numel(grads_abs[i]) ,layer_budget))
+# ================================================shapley ==========================================   
         
+
 
     # num_params_to_keep = int(len(all_scores) * keep_ratio)
     # threshold, _ = torch.topk(all_scores, num_params_to_keep, sorted=True)

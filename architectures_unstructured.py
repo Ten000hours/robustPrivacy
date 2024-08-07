@@ -24,6 +24,8 @@ def get_architecture(arch: str, dataset: str, device, args) -> torch.nn.Module:
         model = resnet18_in(num_classes=100, args=args).to(device)
     elif arch == "resnet18_in" and dataset == "cifar10":
         model = resnet18_in(num_classes=10, args=args).to(device)
+    elif arch == "resnet18_in" and dataset == "FGVCAircraft":
+        model = resnet18_in(num_classes=100, args=args).to(device)
     elif arch == "resnet18_in" and dataset == "tiny_imagenet":
         model = resnet18_in(num_classes=200, args=args).to(device)
     elif arch == "resnet34_in" and dataset == "cifar100":

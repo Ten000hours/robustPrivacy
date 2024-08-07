@@ -24,6 +24,16 @@ from train_utils import AverageMeter, accuracy, accuracy_list, init_logfile, log
 from utils import *
 import sys
 
+
+import neptune
+
+
+run = neptune.init_run(
+    project="xiangruixu1/snip-snl-pgd",
+    api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJiOGQ0M2JmYi1jNDMwLTQyZjItOTI1Ni1iYTI3NzFmZDQ2NjIifQ==",
+)  # your credentials
+
+
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 parser.add_argument('dataset', type=str, choices=DATASETS)
 parser.add_argument('arch', type=str, choices=ARCHITECTURES)
@@ -33,7 +43,7 @@ parser.add_argument('--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 parser.add_argument('--finetune_epochs', default=100, type=int,
                     help='number of total epochs for the finetuning')
-parser.add_argument('--epochs', default=300, type=int)
+parser.add_argument('--epochs', default=600, type=int)
 parser.add_argument('--batch', default=256, type=int, metavar='N',
                     help='batchsize (default: 256)')
 parser.add_argument('--logname', type=str, default='log.txt')
@@ -139,6 +149,12 @@ def main():
                                 epoch, device, alpha=args.alpha, display=False)
         acc = model_inference(net, test_loader, device, display=False)
 
+
+        run["train/accuracy"].append(acc)
+        run["metric"].append(
+            value=acc,
+            step=epoch,
+        )
         # counting ReLU in the neural network by using threshold.
         relu_count = relu_counting(net, args)        
         log(logfilename, 'Epochs: {}\t'
@@ -162,44 +178,44 @@ def main():
     log(logfilename, "After SNL Algorithm, the current ReLU Count: {}, rel. count:{}".format(relu_count, relu_count/total))
 
     # Line 11: Threshold and freeze alpha
-    for name, param in net.named_parameters():
-        if 'alpha' in name:
-            boolean_list = param.data > args.threshold
-            param.data = boolean_list.float()
-            param.requires_grad = False
+    # for name, param in net.named_parameters():
+    #     if 'alpha' in name:
+    #         boolean_list = param.data > args.threshold
+    #         param.data = boolean_list.float()
+    #         param.requires_grad = False
 
  
-    # Line 12: Finetuing the network
-    finetune_epoch = args.finetune_epochs
+    # # Line 12: Finetuing the network
+    # finetune_epoch = args.finetune_epochs
 
-    optimizer = SGD(net.parameters(), lr=1e-3, momentum=args.momentum, weight_decay=args.weight_decay)
-    criterion = nn.CrossEntropyLoss().to(device)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, finetune_epoch)
+    # optimizer = SGD(net.parameters(), lr=1e-3, momentum=args.momentum, weight_decay=args.weight_decay)
+    # criterion = nn.CrossEntropyLoss().to(device)
+    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, finetune_epoch)
     
-    print("Finetuning the model")
-    log(logfilename, "Finetuning the model")
+    # print("Finetuning the model")
+    # log(logfilename, "Finetuning the model")
 
-    best_top1 = 0
-    for epoch in tqdm(range(finetune_epoch)):
-        train_loss, train_top1, train_top5 = train_kd(train_loader, net, base_classifier, optimizer, criterion, epoch, device)
-        test_loss, test_top1, test_top5 = test(test_loader, net, criterion, device, 100, display=True)
-        scheduler.step()
+    # best_top1 = 0
+    # for epoch in tqdm(range(finetune_epoch)):
+    #     train_loss, train_top1, train_top5 = train_kd(train_loader, net, base_classifier, optimizer, criterion, epoch, device)
+    #     test_loss, test_top1, test_top5 = test(test_loader, net, criterion, device, 100, display=True)
+    #     scheduler.step()
         
-        if best_top1 < test_top1:
-            best_top1 = test_top1
-            is_best = True
-        else:
-            is_best = False
+    #     if best_top1 < test_top1:
+    #         best_top1 = test_top1
+    #         is_best = True
+    #     else:
+    #         is_best = False
 
-        if is_best:
-            torch.save({
-                    'arch': args.arch,
-                    'state_dict': net.state_dict(),
-                    'optimizer': optimizer.state_dict(),
-            }, os.path.join(args.outdir, f'snl_best_checkpoint_{args.arch}_{args.dataset}_{args.relu_budget}.pth.tar'))
+    #     if is_best:
+    #         torch.save({
+    #                 'arch': args.arch,
+    #                 'state_dict': net.state_dict(),
+    #                 'optimizer': optimizer.state_dict(),
+    #         }, os.path.join(args.outdir, f'snl_best_checkpoint_{args.arch}_{args.dataset}_{args.relu_budget}.pth.tar'))
 
-    print("Final best Prec@1 = {}%".format(best_top1))
-    log(logfilename, "Final best Prec@1 = {}%".format(best_top1))
+    # print("Final best Prec@1 = {}%".format(best_top1))
+    # log(logfilename, "Final best Prec@1 = {}%".format(best_top1))
         
 if __name__ == "__main__":
     main()

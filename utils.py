@@ -61,6 +61,7 @@ def train(loader: DataLoader, model: torch.nn.Module, criterion, optimizer: Opti
     model.train()
     
     for i, (inputs, targets) in enumerate(loader):
+    # for inputs, targets in enumerate(loader):
         # measure data loading time
         data_time.update(time.time() - end)
 
@@ -230,9 +231,9 @@ def model_inference(base_classifier, loader, device, display=False, print_freq=1
             #           "Acc@5 {top5.avg:.3f}".format(
             #           i, len(loader), top1=top1, top5=top5))
     end = time.time()
-    # if display == True:
-    #     print("Inference Time: {0:.3f}".format(end-start))
-    #     print("Final Accuracy: [{0}]".format(top1.avg))
+    if display == True:
+        print("Inference Time: {0:.3f}".format(end-start))
+        print("Final Accuracy: [{0}]".format(top1.avg))
         
     return top1.avg
 
@@ -360,7 +361,7 @@ def mask_train_kd_unstructured(loader: DataLoader, model: torch.nn.Module, model
         outputs = model(inputs)
         outputs_t = model_teacher(inputs)
         # original loss
-        loss = criterion(outputs, targets) + criterion_kd(outputs, outputs_t) + alpha * reg_loss
+        loss = criterion(outputs, targets) + criterion_kd(outputs, outputs_t) #+ alpha * reg_loss
         # loss = criterion(outputs, targets) 
 
         losses.update(loss.item(), inputs.size(0))

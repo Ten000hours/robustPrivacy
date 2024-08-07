@@ -6,7 +6,7 @@ from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
 from datasets import get_dataset, DATASETS
 from architectures_unstructured import ARCHITECTURES, get_architecture
-from torch.optim import SGD, Optimizer
+from torch.optim import SGD, Optimizer,Adam
 from torch.optim.lr_scheduler import StepLR, MultiStepLR
 import time
 import datetime
@@ -20,7 +20,7 @@ parser.add_argument('arch', type=str, choices=ARCHITECTURES)
 parser.add_argument('outdir', type=str, help='folder to save model and training log)')
 parser.add_argument('--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
-parser.add_argument('--epochs', default=100, type=int, metavar='N',
+parser.add_argument('--epochs', default=180, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--batch', default=256, type=int, metavar='N',
                     help='batchsize (default: 256)')
@@ -67,7 +67,8 @@ def main():
             param.requires_grad = False
 
     criterion = nn.CrossEntropyLoss().to(device)
-    optimizer = SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+    # optimizer = SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+    optimizer = Adam(model.parameters(), lr=args.lr)
     scheduler = MultiStepLR(optimizer, milestones=[args.epochs // 2,  3*args.epochs // 4], last_epoch=-1)
 
     best_top1 = 0.

@@ -1,1 +1,5 @@
-python3 train_unstructured.py 'cifar100' 'resnet9_in' './pretrained_models/cifar100/resnet9_in' --gpu 0 
+DATASET=tiny_imagenet
+arch=resnet18_in
+Path=./pretrained_models/$DATASET/$arch
+
+python3 train_unstructured.py "$DATASET" "$arch" "$Path" --gpu 0 
